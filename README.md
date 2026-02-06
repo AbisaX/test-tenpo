@@ -401,6 +401,8 @@ test-tenpo/
 └── README.md                # Este archivo
 ```
 
-
-
+## Bajar la imagen de Docker Hub
+```bash
+docker pull abisaid0309/calculator-api:1.0.0
+```
 
