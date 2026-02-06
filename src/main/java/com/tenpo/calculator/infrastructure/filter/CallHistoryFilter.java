@@ -40,7 +40,7 @@ public class CallHistoryFilter implements WebFilter {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String path = exchange.getRequest().getPath().value();
 
-        // Only log API calls (excluding the history endpoint itself to avoid recursion)
+        // Solo registrar llamadas a la API (excluyendo el endpoint de historial para evitar recursión)
         if (!path.startsWith(API_PATH_PREFIX) || path.startsWith(HISTORY_PATH)) {
             return chain.filter(exchange);
         }
@@ -70,7 +70,7 @@ public class CallHistoryFilter implements WebFilter {
                 try {
                     saveCallHistory(request, exchange.getResponse(), responseCapture.getContent());
                 } catch (Exception e) {
-                    log.error("Error saving call history: {}", e.getMessage());
+                    log.error("Error al guardar historial de llamadas: {}", e.getMessage());
                 }
             });
     }
@@ -84,7 +84,7 @@ public class CallHistoryFilter implements WebFilter {
 
         String truncatedResponse = responseBody;
         if (truncatedResponse != null && truncatedResponse.length() > 2000) {
-            truncatedResponse = truncatedResponse.substring(0, 2000) + "...[truncated]";
+            truncatedResponse = truncatedResponse.substring(0, 2000) + "...[truncado]";
         }
 
         CallHistory callHistory = CallHistory.create(
@@ -96,7 +96,7 @@ public class CallHistoryFilter implements WebFilter {
             success
         );
 
-        // Save asynchronously
+        // Guardar de forma asíncrona
         callHistoryUseCase.saveCallHistoryAsync(callHistory);
     }
 
@@ -109,7 +109,7 @@ public class CallHistoryFilter implements WebFilter {
             }
             return "{}";
         } catch (JsonProcessingException e) {
-            log.warn("Error serializing parameters: {}", e.getMessage());
+            log.warn("Error al serializar parámetros: {}", e.getMessage());
             return queryParams.toString();
         }
     }

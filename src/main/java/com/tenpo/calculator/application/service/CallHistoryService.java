@@ -23,18 +23,18 @@ public class CallHistoryService implements CallHistoryUseCase {
     @Override
     @Async
     public void saveCallHistoryAsync(CallHistory callHistory) {
-        log.debug("Saving call history asynchronously: {}", callHistory);
+        log.debug("Guardando historial de llamadas de forma asíncrona: {}", callHistory);
         callHistoryRepositoryPort.save(callHistory)
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe(
-                saved -> log.debug("Call history saved successfully with id: {}", saved.id()),
-                error -> log.error("Error saving call history: {}", error.getMessage())
+                saved -> log.debug("Historial de llamadas guardado exitosamente con id: {}", saved.id()),
+                error -> log.error("Error al guardar historial de llamadas: {}", error.getMessage())
             );
     }
 
     @Override
     public Mono<Page<CallHistory>> getCallHistory(int page, int size) {
-        log.debug("Fetching call history page={}, size={}", page, size);
+        log.debug("Consultando historial de llamadas pagina={}, tamaño={}", page, size);
         int offset = page * size;
 
         return Mono.zip(

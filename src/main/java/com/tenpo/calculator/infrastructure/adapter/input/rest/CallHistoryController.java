@@ -58,10 +58,10 @@ public class CallHistoryController {
             @Parameter(description = "Cantidad de elementos por página", example = "10")
             @RequestParam(defaultValue = "10") int size) {
 
-        log.info("Fetching call history: page={}, size={}", page, size);
+        log.info("Consultando historial de llamadas: pagina={}, tamaño={}", page, size);
 
         return callHistoryUseCase.getCallHistory(page, size)
             .map(pageResult -> PageResponse.fromPage(pageResult, CallHistoryResponse::fromDomain))
-            .doOnSuccess(response -> log.info("Retrieved {} history entries", response.content().size()));
+            .doOnSuccess(response -> log.info("Se recuperaron {} registros del historial", response.content().size()));
     }
 }

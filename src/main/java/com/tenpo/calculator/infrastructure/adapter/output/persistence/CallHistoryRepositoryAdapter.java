@@ -19,14 +19,14 @@ public class CallHistoryRepositoryAdapter implements CallHistoryRepositoryPort {
 
     @Override
     public Mono<CallHistory> save(CallHistory callHistory) {
-        log.debug("Saving call history to database");
+        log.debug("Guardando historial de llamadas en base de datos");
         return repository.save(CallHistoryEntity.fromDomain(callHistory))
             .map(CallHistoryEntity::toDomain);
     }
 
     @Override
     public Flux<CallHistory> findAllPaginated(int offset, int limit) {
-        log.debug("Finding call history with offset={}, limit={}", offset, limit);
+        log.debug("Buscando historial de llamadas con desplazamiento={}, limite={}", offset, limit);
         return repository.findAllPaginated(offset, limit)
             .map(CallHistoryEntity::toDomain);
     }

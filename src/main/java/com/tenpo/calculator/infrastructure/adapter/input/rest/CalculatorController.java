@@ -58,10 +58,10 @@ public class CalculatorController {
         )
     })
     public Mono<CalculationResponse> calculate(@Valid @RequestBody CalculationRequest request) {
-        log.info("Received calculation request: num1={}, num2={}", request.num1(), request.num2());
+        log.info("Solicitud de cálculo recibida: num1={}, num2={}", request.num1(), request.num2());
 
         return calculatorUseCase.calculateWithPercentage(request.num1(), request.num2())
             .map(CalculationResponse::fromDomain)
-            .doOnSuccess(response -> log.info("Calculation completed successfully: {}", response));
+            .doOnSuccess(response -> log.info("Cálculo completado exitosamente: {}", response));
     }
 }

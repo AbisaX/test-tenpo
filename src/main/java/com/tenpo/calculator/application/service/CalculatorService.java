@@ -19,13 +19,13 @@ public class CalculatorService implements CalculatorUseCase {
 
     @Override
     public Mono<CalculationResult> calculateWithPercentage(BigDecimal num1, BigDecimal num2) {
-        log.debug("Calculating with percentage for num1={}, num2={}", num1, num2);
+        log.debug("Calculando con porcentaje para num1={}, num2={}", num1, num2);
 
         return percentageServicePort.getPercentage()
             .map(percentage -> {
-                log.debug("Received percentage: {}%", percentage);
+                log.debug("Porcentaje recibido: {}%", percentage);
                 return CalculationResult.of(num1, num2, percentage);
             })
-            .doOnSuccess(result -> log.debug("Calculation result: {}", result));
+            .doOnSuccess(result -> log.debug("Resultado del cálculo: {}", result));
     }
 }
