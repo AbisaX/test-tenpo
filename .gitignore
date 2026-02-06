@@ -1,0 +1,78 @@
+# ===========================================
+# Git Ignore - API Calculadora Tenpo
+# Archivos excluidos del repositorio
+# ===========================================
+
+# Archivos compilados de Java
+*.class
+
+# Archivos de log
+*.log
+logs/
+
+# Archivos BlueJ
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Archivos empaquetados
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Logs de crash de la JVM
+hs_err_pid*
+replay_pid*
+
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+apache-maven-3.9.6/
+
+# Gradle
+.gradle
+build/
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# IDE - Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# IDE - VSCode
+.vscode/
+
+# Sistema Operativo
+.DS_Store
+Thumbs.db
+
+# Configuracion local de la aplicacion
+application-local.yml
+application-local.properties
+
+# Cobertura de tests
+jacoco.exec

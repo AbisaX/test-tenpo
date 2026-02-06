@@ -1,0 +1,33 @@
+# ===========================================
+# Docker Ignore - API Calculadora Tenpo
+# Archivos excluidos de la imagen Docker
+# ===========================================
+
+# Control de versiones
+.git
+.gitignore
+
+# Entornos de desarrollo (IDE)
+.idea
+*.iml
+.vscode
+
+# Archivos compilados
+target/
+*.class
+
+# Logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.swp
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Documentacion (excepto README)
+*.md
+!README.md

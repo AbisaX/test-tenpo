@@ -1,0 +1,60 @@
+spring:
+  application:
+    name: calculator-api
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:calculator_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+  flyway:
+    enabled: true
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:calculator_db}
+    user: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres}
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# External service configuration
+external-service:
+  url: ${EXTERNAL_SERVICE_URL:http://localhost:8081}
+  percentage-endpoint: /api/percentage
+  mock:
+    enabled: ${EXTERNAL_SERVICE_MOCK_ENABLED:true}
+
+# Resilience4j Retry configuration
+resilience4j:
+  retry:
+    instances:
+      externalService:
+        max-attempts: 3
+        wait-duration: 500ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.lang.Exception
+
+# Rate limiting configuration
+rate-limit:
+  requests-per-minute: 3
+
+# Logging
+logging:
+  level:
+    com.tenpo: DEBUG
+    io.r2dbc.postgresql: INFO
+
+# Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+# OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
