@@ -21,17 +21,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CalculatorController - Tests Unitarios")
+@DisplayName("CalculatorController - Tests unitarios")
 class CalculatorControllerTest {
 
     @Mock
-    private CalculatorUseCase calculatorUseCase;
+    private CalculatorUseCase servicioCalculadora;
 
     private WebTestClient webTestClient;
 
     @BeforeEach
     void configurar() {
-        CalculatorController controller = new CalculatorController(calculatorUseCase);
+        CalculatorController controller = new CalculatorController(servicioCalculadora);
         webTestClient = WebTestClient.bindToController(controller)
             .controllerAdvice(new GlobalExceptionHandler())
             .build();
@@ -40,15 +40,13 @@ class CalculatorControllerTest {
     @Test
     @DisplayName("Debe retornar resultado del cálculo con estado 200 OK")
     void debeRetornarResultadoDelCalculo() {
-        // Arrange (Preparación)
         BigDecimal num1 = new BigDecimal("5");
         BigDecimal num2 = new BigDecimal("5");
         CalculationResult resultado = CalculationResult.of(num1, num2, new BigDecimal("10"));
 
-        when(calculatorUseCase.calculateWithPercentage(any(), any()))
+        when(servicioCalculadora.calculateWithPercentage(any(), any()))
             .thenReturn(Mono.just(resultado));
 
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -62,20 +60,18 @@ class CalculatorControllerTest {
             .jsonPath("$.percentageApplied").isEqualTo(10)
             .jsonPath("$.result").isEqualTo(11);
 
-        verify(calculatorUseCase).calculateWithPercentage(any(), any());
+        verify(servicioCalculadora).calculateWithPercentage(any(), any());
     }
 
     @Test
     @DisplayName("Debe retornar 503 cuando el servicio externo falla")
     void debeRetornar503CuandoServicioExternoFalla() {
-        // Arrange (Preparación)
         BigDecimal num1 = new BigDecimal("5");
         BigDecimal num2 = new BigDecimal("5");
 
-        when(calculatorUseCase.calculateWithPercentage(any(), any()))
+        when(servicioCalculadora.calculateWithPercentage(any(), any()))
             .thenReturn(Mono.error(new ExternalServiceException("Servicio no disponible después de reintentos")));
 
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -84,15 +80,12 @@ class CalculatorControllerTest {
             .expectStatus().isEqualTo(503)
             .expectBody()
             .jsonPath("$.status").isEqualTo(503)
-            .jsonPath("$.error").isEqualTo("Servicio No Disponible");
+            .jsonPath("$.error").isEqualTo("Servicio no disponible");
     }
 
     @Test
     @DisplayName("Debe retornar 400 cuando num1 es nulo")
     void debeRetornar400CuandoNum1EsNulo() {
-        // Arrange (Preparación) - sin preparación necesaria
-
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -104,9 +97,6 @@ class CalculatorControllerTest {
     @Test
     @DisplayName("Debe retornar 400 cuando num2 es nulo")
     void debeRetornar400CuandoNum2EsNulo() {
-        // Arrange (Preparación) - sin preparación necesaria
-
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -118,15 +108,13 @@ class CalculatorControllerTest {
     @Test
     @DisplayName("Debe manejar números decimales correctamente")
     void debeManejarNumerosDecimales() {
-        // Arrange (Preparación)
         BigDecimal num1 = new BigDecimal("10.5");
         BigDecimal num2 = new BigDecimal("5.5");
         CalculationResult resultado = CalculationResult.of(num1, num2, new BigDecimal("20"));
 
-        when(calculatorUseCase.calculateWithPercentage(any(), any()))
+        when(servicioCalculadora.calculateWithPercentage(any(), any()))
             .thenReturn(Mono.just(resultado));
 
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -141,15 +129,13 @@ class CalculatorControllerTest {
     @Test
     @DisplayName("Debe manejar números negativos correctamente")
     void debeManejarNumerosNegativos() {
-        // Arrange (Preparación)
         BigDecimal num1 = new BigDecimal("-5");
         BigDecimal num2 = new BigDecimal("10");
         CalculationResult resultado = CalculationResult.of(num1, num2, new BigDecimal("10"));
 
-        when(calculatorUseCase.calculateWithPercentage(any(), any()))
+        when(servicioCalculadora.calculateWithPercentage(any(), any()))
             .thenReturn(Mono.just(resultado));
 
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)

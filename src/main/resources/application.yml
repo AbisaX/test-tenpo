@@ -16,14 +16,14 @@ spring:
 server:
   port: ${SERVER_PORT:8080}
 
-# External service configuration
+# Configuración del servicio externo
 external-service:
   url: ${EXTERNAL_SERVICE_URL:http://localhost:8081}
   percentage-endpoint: /api/percentage
   mock:
     enabled: ${EXTERNAL_SERVICE_MOCK_ENABLED:true}
 
-# Resilience4j Retry configuration
+# Reintentos (Resilience4j)
 resilience4j:
   retry:
     instances:
@@ -35,11 +35,15 @@ resilience4j:
         retry-exceptions:
           - java.lang.Exception
 
-# Rate limiting configuration
+# Límite de peticiones
 rate-limit:
   requests-per-minute: 3
 
-# Logging
+# Historial de llamadas (evita respuestas muy grandes en la tabla)
+call-history:
+  max-response-length: 2000
+
+# Logs
 logging:
   level:
     com.tenpo: DEBUG

@@ -21,43 +21,43 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class GlobalWebExceptionHandler implements ErrorWebExceptionHandler {
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper jsonMapper;
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
         HttpStatus status;
-        String error;
-        String message;
+        String titulo;
+        String detalle;
 
         if (ex instanceof RateLimitExceededException) {
             status = HttpStatus.TOO_MANY_REQUESTS;
-            error = "Demasiadas Peticiones";
-            message = "Límite de peticiones excedido. Máximo 3 peticiones por minuto permitidas. Por favor, intente nuevamente más tarde.";
-            log.warn("Límite de peticiones excedido: {}", ex.getMessage());
+            titulo = "Demasiadas peticiones";
+            detalle = "Límite de peticiones excedido. Máximo 3 por minuto. Intenta más tarde.";
+            log.warn("Rate limit excedido: {}", ex.getMessage());
         } else if (ex instanceof ExternalServiceException) {
             status = HttpStatus.SERVICE_UNAVAILABLE;
-            error = "Servicio No Disponible";
-            message = "El servicio externo de porcentaje no está disponible después de 3 intentos. Por favor, intente nuevamente más tarde.";
+            titulo = "Servicio no disponible";
+            detalle = "El servicio de porcentaje no respondió después de 3 intentos.";
             log.error("Error del servicio externo: {}", ex.getMessage());
         } else {
             status = HttpStatus.INTERNAL_SERVER_ERROR;
-            error = "Error Interno del Servidor";
-            message = "Ocurrió un error inesperado. Por favor, intente nuevamente más tarde.";
+            titulo = "Error interno del servidor";
+            detalle = "Ocurrió un error inesperado. Intenta nuevamente más tarde.";
             log.error("Error inesperado: {}", ex.getMessage(), ex);
         }
 
         exchange.getResponse().setStatusCode(status);
         exchange.getResponse().getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-        ErrorResponse errorResponse = ErrorResponse.of(
+        ErrorResponse respuesta = ErrorResponse.of(
             status.value(),
-            error,
-            message,
+            titulo,
+            detalle,
             exchange.getRequest().getPath().value()
         );
 
         try {
-            byte[] bytes = objectMapper.writeValueAsBytes(errorResponse);
+            byte[] bytes = jsonMapper.writeValueAsBytes(respuesta);
             return exchange.getResponse()
                 .writeWith(Mono.just(exchange.getResponse().bufferFactory().wrap(bytes)));
         } catch (JsonProcessingException e) {

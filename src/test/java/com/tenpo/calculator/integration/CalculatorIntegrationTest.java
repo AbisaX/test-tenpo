@@ -19,7 +19,7 @@ import java.math.BigDecimal;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
 @Testcontainers
-@DisplayName("API Calculadora - Tests de Integración")
+@DisplayName("API Calculadora - Tests de integración")
 class CalculatorIntegrationTest {
 
     @Container
@@ -38,7 +38,7 @@ class CalculatorIntegrationTest {
         registry.add("spring.flyway.user", postgres::getUsername);
         registry.add("spring.flyway.password", postgres::getPassword);
         registry.add("external-service.mock.enabled", () -> "true");
-        registry.add("rate-limit.requests-per-minute", () -> "100"); // Límite mayor para tests
+        registry.add("rate-limit.requests-per-minute", () -> "100"); // Límite alto para tests
     }
 
     @Autowired
@@ -47,13 +47,11 @@ class CalculatorIntegrationTest {
     @Test
     @DisplayName("Debe calcular suma con porcentaje exitosamente")
     void debeCalcularSumaConPorcentaje() {
-        // Arrange (Preparación)
         CalculationRequest peticion = new CalculationRequest(
             new BigDecimal("5"),
             new BigDecimal("5")
         );
 
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -69,11 +67,8 @@ class CalculatorIntegrationTest {
     }
 
     @Test
-    @DisplayName("Debe retornar solicitud incorrecta para parámetros faltantes")
-    void debeRetornarSolicitudIncorrectaParaParametrosFaltantes() {
-        // Arrange (Preparación) - petición vacía
-
-        // Act & Assert (Acción y Verificación)
+    @DisplayName("Debe retornar solicitud inválida para parámetros faltantes")
+    void debeRetornarSolicitudInvalidaParaParametrosFaltantes() {
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -85,7 +80,6 @@ class CalculatorIntegrationTest {
     @Test
     @DisplayName("Debe obtener historial de llamadas con paginación")
     void debeObtenerHistorialConPaginacion() {
-        // Arrange (Preparación) - Primero hacer un cálculo
         CalculationRequest peticion = new CalculationRequest(
             new BigDecimal("10"),
             new BigDecimal("20")
@@ -98,14 +92,12 @@ class CalculatorIntegrationTest {
             .exchange()
             .expectStatus().isOk();
 
-        // Esperar guardado asíncrono del historial
         try {
             Thread.sleep(500);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
 
-        // Act & Assert (Acción y Verificación) - Obtener historial
         webTestClient.get()
             .uri("/api/v1/history?page=0&size=10")
             .exchange()
@@ -119,13 +111,11 @@ class CalculatorIntegrationTest {
     @Test
     @DisplayName("Debe manejar números decimales en el cálculo")
     void debeManejarNumerosDecimales() {
-        // Arrange (Preparación)
         CalculationRequest peticion = new CalculationRequest(
             new BigDecimal("10.5"),
             new BigDecimal("5.5")
         );
 
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -140,13 +130,11 @@ class CalculatorIntegrationTest {
     @Test
     @DisplayName("Debe manejar números negativos")
     void debeManejarNumerosNegativos() {
-        // Arrange (Preparación)
         CalculationRequest peticion = new CalculationRequest(
             new BigDecimal("-5"),
             new BigDecimal("15")
         );
 
-        // Act & Assert (Acción y Verificación)
         webTestClient.post()
             .uri("/api/v1/calculator/calculate")
             .contentType(MediaType.APPLICATION_JSON)
@@ -161,9 +149,6 @@ class CalculatorIntegrationTest {
     @Test
     @DisplayName("Swagger UI debe ser accesible")
     void swaggerUiDebeSerAccesible() {
-        // Arrange (Preparación) - no se requiere
-
-        // Act & Assert (Acción y Verificación)
         webTestClient.get()
             .uri("/swagger-ui.html")
             .exchange()
@@ -173,9 +158,6 @@ class CalculatorIntegrationTest {
     @Test
     @DisplayName("Documentación de API debe ser accesible")
     void documentacionApiDebeSerAccesible() {
-        // Arrange (Preparación) - no se requiere
-
-        // Act & Assert (Acción y Verificación)
         webTestClient.get()
             .uri("/api-docs")
             .exchange()
@@ -185,9 +167,6 @@ class CalculatorIntegrationTest {
     @Test
     @DisplayName("Endpoint de salud debe ser accesible")
     void endpointDeSaludDebeSerAccesible() {
-        // Arrange (Preparación) - no se requiere
-
-        // Act & Assert (Acción y Verificación)
         webTestClient.get()
             .uri("/actuator/health")
             .exchange()

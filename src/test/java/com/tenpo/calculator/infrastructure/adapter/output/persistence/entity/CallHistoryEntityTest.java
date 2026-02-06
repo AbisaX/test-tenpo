@@ -8,13 +8,12 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("CallHistoryEntity - Tests Unitarios")
+@DisplayName("CallHistoryEntity - Tests unitarios")
 class CallHistoryEntityTest {
 
     @Test
     @DisplayName("Debe convertir de modelo de dominio a entidad")
     void debeConvertirDeDominioAEntidad() {
-        // Arrange (Preparación)
         CallHistory historial = new CallHistory(
             1L,
             LocalDateTime.now(),
@@ -26,10 +25,8 @@ class CallHistoryEntityTest {
             true
         );
 
-        // Act (Acción)
         CallHistoryEntity entidad = CallHistoryEntity.fromDomain(historial);
 
-        // Assert (Verificación)
         assertThat(entidad.getId()).isEqualTo(historial.id());
         assertThat(entidad.getTimestamp()).isEqualTo(historial.timestamp());
         assertThat(entidad.getEndpoint()).isEqualTo(historial.endpoint());
@@ -43,7 +40,6 @@ class CallHistoryEntityTest {
     @Test
     @DisplayName("Debe convertir de entidad a modelo de dominio")
     void debeConvertirDeEntidadADominio() {
-        // Arrange (Preparación)
         CallHistoryEntity entidad = CallHistoryEntity.builder()
             .id(1L)
             .timestamp(LocalDateTime.now())
@@ -55,10 +51,8 @@ class CallHistoryEntityTest {
             .success(true)
             .build();
 
-        // Act (Acción)
         CallHistory dominio = entidad.toDomain();
 
-        // Assert (Verificación)
         assertThat(dominio.id()).isEqualTo(entidad.getId());
         assertThat(dominio.timestamp()).isEqualTo(entidad.getTimestamp());
         assertThat(dominio.endpoint()).isEqualTo(entidad.getEndpoint());
@@ -72,7 +66,6 @@ class CallHistoryEntityTest {
     @Test
     @DisplayName("Debe manejar valores nulos correctamente")
     void debeManejarValoresNulos() {
-        // Arrange (Preparación)
         CallHistory historial = new CallHistory(
             null,
             LocalDateTime.now(),
@@ -84,11 +77,9 @@ class CallHistoryEntityTest {
             false
         );
 
-        // Act (Acción)
         CallHistoryEntity entidad = CallHistoryEntity.fromDomain(historial);
         CallHistory deVueltaADominio = entidad.toDomain();
 
-        // Assert (Verificación)
         assertThat(deVueltaADominio.id()).isNull();
         assertThat(deVueltaADominio.parameters()).isNull();
         assertThat(deVueltaADominio.response()).isNull();

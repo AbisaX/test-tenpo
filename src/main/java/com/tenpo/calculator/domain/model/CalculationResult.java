@@ -11,8 +11,8 @@ public record CalculationResult(
 ) {
     public static CalculationResult of(BigDecimal num1, BigDecimal num2, BigDecimal porcentaje) {
         BigDecimal suma = num1.add(num2);
-        BigDecimal valorPorcentaje = suma.multiply(porcentaje).divide(BigDecimal.valueOf(100));
-        BigDecimal resultado = suma.add(valorPorcentaje);
+        BigDecimal incremento = suma.multiply(porcentaje).divide(BigDecimal.valueOf(100));
+        BigDecimal resultado = suma.add(incremento);
         return new CalculationResult(num1, num2, suma, porcentaje, resultado);
     }
 }

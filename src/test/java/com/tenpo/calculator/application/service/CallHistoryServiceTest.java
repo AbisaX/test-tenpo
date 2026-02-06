@@ -21,23 +21,22 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CallHistoryService - Tests Unitarios")
+@DisplayName("CallHistoryService - Tests unitarios")
 class CallHistoryServiceTest {
 
     @Mock
-    private CallHistoryRepositoryPort callHistoryRepositoryPort;
+    private CallHistoryRepositoryPort repositorioHistorial;
 
     private CallHistoryService callHistoryService;
 
     @BeforeEach
     void configurar() {
-        callHistoryService = new CallHistoryService(callHistoryRepositoryPort);
+        callHistoryService = new CallHistoryService(repositorioHistorial);
     }
 
     @Test
     @DisplayName("Debe guardar el historial de llamadas de forma asíncrona")
     void debeGuardarHistorialDeFormaAsincrona() throws InterruptedException {
-        // Arrange (Preparación)
         CallHistory historial = CallHistory.create(
             "/api/v1/calculator/calculate",
             "POST",
@@ -58,21 +57,18 @@ class CallHistoryServiceTest {
             historial.success()
         );
 
-        when(callHistoryRepositoryPort.save(any(CallHistory.class)))
+        when(repositorioHistorial.save(any(CallHistory.class)))
             .thenReturn(Mono.just(historialGuardado));
 
-        // Act (Acción)
         callHistoryService.saveCallHistoryAsync(historial);
 
-        // Assert (Verificación)
         Thread.sleep(500);
-        verify(callHistoryRepositoryPort, times(1)).save(any(CallHistory.class));
+        verify(repositorioHistorial, times(1)).save(any(CallHistory.class));
     }
 
     @Test
     @DisplayName("Debe obtener el historial de llamadas paginado")
     void debeObtenerHistorialPaginado() {
-        // Arrange (Preparación)
         int pagina = 0;
         int tamanio = 10;
 
@@ -81,15 +77,13 @@ class CallHistoryServiceTest {
             new CallHistory(2L, LocalDateTime.now(), "/api/v1/history", "GET", "{}", "[]", 200, true)
         );
 
-        when(callHistoryRepositoryPort.findAllPaginated(0, 10))
+        when(repositorioHistorial.findAllPaginated(0, 10))
             .thenReturn(Flux.fromIterable(listaHistorial));
-        when(callHistoryRepositoryPort.count())
+        when(repositorioHistorial.count())
             .thenReturn(Mono.just(2L));
 
-        // Act (Acción)
         Mono<Page<CallHistory>> resultadoMono = callHistoryService.getCallHistory(pagina, tamanio);
 
-        // Assert (Verificación)
         StepVerifier.create(resultadoMono)
             .assertNext(paginaResultado -> {
                 assertThat(paginaResultado.getContent()).hasSize(2);
@@ -99,26 +93,23 @@ class CallHistoryServiceTest {
             })
             .verifyComplete();
 
-        verify(callHistoryRepositoryPort).findAllPaginated(0, 10);
-        verify(callHistoryRepositoryPort).count();
+        verify(repositorioHistorial).findAllPaginated(0, 10);
+        verify(repositorioHistorial).count();
     }
 
     @Test
     @DisplayName("Debe manejar historial vacío correctamente")
     void debeManejarHistorialVacio() {
-        // Arrange (Preparación)
         int pagina = 0;
         int tamanio = 10;
 
-        when(callHistoryRepositoryPort.findAllPaginated(0, 10))
+        when(repositorioHistorial.findAllPaginated(0, 10))
             .thenReturn(Flux.empty());
-        when(callHistoryRepositoryPort.count())
+        when(repositorioHistorial.count())
             .thenReturn(Mono.just(0L));
 
-        // Act (Acción)
         Mono<Page<CallHistory>> resultadoMono = callHistoryService.getCallHistory(pagina, tamanio);
 
-        // Assert (Verificación)
         StepVerifier.create(resultadoMono)
             .assertNext(paginaResultado -> {
                 assertThat(paginaResultado.getContent()).isEmpty();
@@ -130,19 +121,16 @@ class CallHistoryServiceTest {
     @Test
     @DisplayName("Debe calcular el offset correcto para la paginación")
     void debeCalcularOffsetCorrecto() {
-        // Arrange (Preparación)
         int pagina = 2;
         int tamanio = 5;
 
-        when(callHistoryRepositoryPort.findAllPaginated(10, 5))
+        when(repositorioHistorial.findAllPaginated(10, 5))
             .thenReturn(Flux.empty());
-        when(callHistoryRepositoryPort.count())
+        when(repositorioHistorial.count())
             .thenReturn(Mono.just(0L));
 
-        // Act (Acción)
         callHistoryService.getCallHistory(pagina, tamanio).block();
 
-        // Assert (Verificación) - offset: página * tamaño = 2 * 5 = 10
-        verify(callHistoryRepositoryPort).findAllPaginated(10, 5);
+        verify(repositorioHistorial).findAllPaginated(10, 5);
     }
 }

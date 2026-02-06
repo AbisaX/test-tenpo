@@ -7,13 +7,12 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("CallHistory - Tests Unitarios")
+@DisplayName("CallHistory - Tests unitarios")
 class CallHistoryTest {
 
     @Test
     @DisplayName("Debe crear CallHistory con valores correctos")
     void debeCrearCallHistoryConValoresCorrectos() {
-        // Arrange (Preparación)
         String endpoint = "/api/v1/calculator/calculate";
         String metodoHttp = "POST";
         String parametros = "{\"num1\": 5, \"num2\": 5}";
@@ -21,10 +20,8 @@ class CallHistoryTest {
         Integer codigoEstado = 200;
         boolean exitoso = true;
 
-        // Act (Acción)
         CallHistory historial = CallHistory.create(endpoint, metodoHttp, parametros, respuesta, codigoEstado, exitoso);
 
-        // Assert (Verificación)
         assertThat(historial.id()).isNull();
         assertThat(historial.timestamp()).isNotNull();
         assertThat(historial.timestamp()).isBefore(LocalDateTime.now().plusSeconds(1));
@@ -39,18 +36,15 @@ class CallHistoryTest {
     @Test
     @DisplayName("Debe crear CallHistory para petición fallida")
     void debeCrearCallHistoryParaPeticionFallida() {
-        // Arrange (Preparación)
         String endpoint = "/api/v1/calculator/calculate";
         String metodoHttp = "POST";
         String parametros = "{}";
-        String respuesta = "{\"error\": \"Solicitud Incorrecta\"}";
+        String respuesta = "{\"error\": \"Solicitud inválida\"}";
         Integer codigoEstado = 400;
         boolean exitoso = false;
 
-        // Act (Acción)
         CallHistory historial = CallHistory.create(endpoint, metodoHttp, parametros, respuesta, codigoEstado, exitoso);
 
-        // Assert (Verificación)
         assertThat(historial.success()).isFalse();
         assertThat(historial.statusCode()).isEqualTo(400);
     }
@@ -58,7 +52,6 @@ class CallHistoryTest {
     @Test
     @DisplayName("Debe crear CallHistory mediante constructor del record")
     void debeCrearCallHistoryMedianteConstructor() {
-        // Arrange (Preparación)
         Long id = 1L;
         LocalDateTime timestamp = LocalDateTime.now();
         String endpoint = "/api/v1/history";
@@ -68,10 +61,8 @@ class CallHistoryTest {
         Integer codigoEstado = 200;
         boolean exitoso = true;
 
-        // Act (Acción)
         CallHistory historial = new CallHistory(id, timestamp, endpoint, metodoHttp, parametros, respuesta, codigoEstado, exitoso);
 
-        // Assert (Verificación)
         assertThat(historial.id()).isEqualTo(id);
         assertThat(historial.timestamp()).isEqualTo(timestamp);
         assertThat(historial.endpoint()).isEqualTo(endpoint);

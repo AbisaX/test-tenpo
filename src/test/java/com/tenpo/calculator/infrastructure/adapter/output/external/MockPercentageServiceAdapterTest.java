@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("MockPercentageServiceAdapter - Tests Unitarios")
+@DisplayName("MockPercentageServiceAdapter - Tests unitarios")
 class MockPercentageServiceAdapterTest {
 
     private MockPercentageServiceAdapter adapter;
@@ -22,9 +22,6 @@ class MockPercentageServiceAdapterTest {
     @Test
     @DisplayName("Debe retornar porcentaje mock del 10%")
     void debeRetornarPorcentajeMock() {
-        // Arrange (Preparación) - no se requiere preparación adicional
-
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(adapter.getPercentage())
             .assertNext(porcentaje -> {
                 assertThat(porcentaje).isEqualByComparingTo(new BigDecimal("10"));
@@ -35,9 +32,6 @@ class MockPercentageServiceAdapterTest {
     @Test
     @DisplayName("Debe retornar valor de porcentaje consistente en múltiples llamadas")
     void debeRetornarValorConsistente() {
-        // Arrange (Preparación) - no se requiere preparación adicional
-
-        // Act & Assert (Acción y Verificación) - llamar múltiples veces
         StepVerifier.create(adapter.getPercentage())
             .assertNext(p1 -> assertThat(p1).isEqualByComparingTo(new BigDecimal("10")))
             .verifyComplete();

@@ -7,6 +7,7 @@ import com.tenpo.calculator.domain.port.input.CallHistoryUseCase;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -24,105 +25,114 @@ import reactor.core.publisher.Mono;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+/**
+ * Filtro que intercepta las llamadas a la API de cálculo y registra
+ * la petición y su respuesta en el historial. Se ejecuta después del
+ * RateLimitFilter para no registrar peticiones que fueron rechazadas.
+ */
 @Component
 @Order(Ordered.LOWEST_PRECEDENCE - 10)
 @RequiredArgsConstructor
 @Slf4j
 public class CallHistoryFilter implements WebFilter {
 
-    private final CallHistoryUseCase casoUsoHistorial;
-    private final ObjectMapper mapeadorJson;
+    private final CallHistoryUseCase servicioHistorial;
+    private final ObjectMapper jsonMapper;
 
-    private static final String PREFIJO_RUTA_API = "/api/v1/";
+    @Value("${call-history.max-response-length:2000}")
+    private int maxLargoRespuesta;
+
+    private static final String RUTA_API = "/api/v1/";
     private static final String RUTA_HISTORIAL = "/api/v1/history";
+    private static final String SUFIJO_TRUNCADO = "...(recortado)";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String ruta = exchange.getRequest().getPath().value();
 
-        // Solo registrar llamadas a la API (excluyendo el endpoint de historial para evitar recursión)
-        if (!ruta.startsWith(PREFIJO_RUTA_API) || ruta.startsWith(RUTA_HISTORIAL)) {
+        // Se excluye el endpoint de historial para que consultar el historial
+        // no genere nuevos registros y el almacenamiento crezca sin control.
+        if (!ruta.startsWith(RUTA_API) || ruta.startsWith(RUTA_HISTORIAL)) {
             return chain.filter(exchange);
         }
 
-        ServerHttpRequest peticion = exchange.getRequest();
-        CapturaRespuesta capturaRespuesta = new CapturaRespuesta();
+        ServerHttpRequest request = exchange.getRequest();
+        AcumuladorRespuesta acumuladorRespuesta = new AcumuladorRespuesta();
 
+        // Se decora la respuesta para capturar el cuerpo antes de enviarlo al cliente.
+        // En WebFlux el cuerpo es un stream de una sola lectura.
         ServerHttpResponseDecorator respuestaDecorada = new ServerHttpResponseDecorator(exchange.getResponse()) {
             @Override
-            public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-                if (body instanceof Flux<? extends DataBuffer> fluxBody) {
-                    return super.writeWith(fluxBody.doOnNext(dataBuffer -> {
-                        byte[] contenido = new byte[dataBuffer.readableByteCount()];
-                        dataBuffer.read(contenido);
+            public Mono<Void> writeWith(Publisher<? extends DataBuffer> cuerpo) {
+                if (cuerpo instanceof Flux<? extends DataBuffer> flujoCuerpo) {
+                    return super.writeWith(flujoCuerpo.doOnNext(dataBuffer -> {
+                        byte[] content = new byte[dataBuffer.readableByteCount()];
+                        dataBuffer.read(content);
                         DataBufferUtils.release(dataBuffer);
-                        capturaRespuesta.agregarContenido(new String(contenido, StandardCharsets.UTF_8));
+                        acumuladorRespuesta.append(new String(content, StandardCharsets.UTF_8));
                     }).map(dataBuffer -> exchange.getResponse().bufferFactory().wrap(
-                        capturaRespuesta.obtenerContenido().getBytes(StandardCharsets.UTF_8)
+                        acumuladorRespuesta.getContent().getBytes(StandardCharsets.UTF_8)
                     )));
                 }
-                return super.writeWith(body);
+                return super.writeWith(cuerpo);
             }
         };
 
         return chain.filter(exchange.mutate().response(respuestaDecorada).build())
-            .doFinally(tipoSenal -> {
+            .doFinally(signalType -> {
                 try {
-                    guardarHistorial(peticion, exchange.getResponse(), capturaRespuesta.obtenerContenido());
+                    registrarLlamada(request, exchange.getResponse(), acumuladorRespuesta.getContent());
                 } catch (Exception e) {
-                    log.error("Error al guardar historial de llamadas: {}", e.getMessage());
+                    log.error("No se pudo registrar llamada en historial para {}: {}",
+                        request.getPath().value(), e.getMessage());
                 }
             });
     }
 
-    private void guardarHistorial(ServerHttpRequest peticion, ServerHttpResponse respuesta, String cuerpoRespuesta) {
-        String endpoint = peticion.getPath().value();
-        String metodoHttp = peticion.getMethod().name();
-        String parametros = extraerParametros(peticion);
-        Integer codigoEstado = respuesta.getStatusCode() != null ? respuesta.getStatusCode().value() : null;
+    private void registrarLlamada(ServerHttpRequest request, ServerHttpResponse response, String cuerpoRespuesta) {
+        String endpoint = request.getPath().value();
+        String httpMethod = request.getMethod().name();
+        String parametros = serializarQueryParams(request);
+        Integer codigoEstado = response.getStatusCode() != null ? response.getStatusCode().value() : null;
         boolean exitoso = codigoEstado != null && codigoEstado >= 200 && codigoEstado < 400;
 
-        String respuestaTruncada = cuerpoRespuesta;
-        if (respuestaTruncada != null && respuestaTruncada.length() > 2000) {
-            respuestaTruncada = respuestaTruncada.substring(0, 2000) + "...[truncado]";
+        // Se recorta para evitar respuestas enormes en call_history y mantener consultas ágiles.
+        // El límite se configura en application.yml.
+        String cuerpoRecortado = cuerpoRespuesta;
+        if (cuerpoRecortado != null && cuerpoRecortado.length() > maxLargoRespuesta) {
+            cuerpoRecortado = cuerpoRecortado.substring(0, maxLargoRespuesta) + SUFIJO_TRUNCADO;
         }
 
-        CallHistory historialLlamada = CallHistory.create(
-            endpoint,
-            metodoHttp,
-            parametros,
-            respuestaTruncada,
-            codigoEstado,
-            exitoso
+        CallHistory record = CallHistory.create(
+            endpoint, httpMethod, parametros, cuerpoRecortado, codigoEstado, exitoso
         );
 
-        // Guardar de forma asíncrona
-        casoUsoHistorial.saveCallHistoryAsync(historialLlamada);
+        servicioHistorial.saveCallHistoryAsync(record);
     }
 
-    private String extraerParametros(ServerHttpRequest peticion) {
-        Map<String, String> parametrosConsulta = peticion.getQueryParams().toSingleValueMap();
-
-        try {
-            if (!parametrosConsulta.isEmpty()) {
-                return mapeadorJson.writeValueAsString(parametrosConsulta);
-            }
+    private String serializarQueryParams(ServerHttpRequest request) {
+        Map<String, String> parametros = request.getQueryParams().toSingleValueMap();
+        if (parametros.isEmpty()) {
             return "{}";
+        }
+        try {
+            return jsonMapper.writeValueAsString(parametros);
         } catch (JsonProcessingException e) {
-            log.warn("Error al serializar parámetros: {}", e.getMessage());
-            return parametrosConsulta.toString();
+            log.warn("No se pudieron serializar los parámetros de {}: {}",
+                request.getPath().value(), e.getMessage());
+            return parametros.toString();
         }
     }
 
-    private static class CapturaRespuesta {
-        private final StringBuilder contenido = new StringBuilder();
+    private static class AcumuladorRespuesta {
+        private final StringBuilder buffer = new StringBuilder();
 
-        void agregarContenido(String fragmento) {
-            contenido.append(fragmento);
+        void append(String chunk) {
+            buffer.append(chunk);
         }
 
-        String obtenerContenido() {
-            return contenido.toString();
+        String getContent() {
+            return buffer.toString();
         }
     }
 }

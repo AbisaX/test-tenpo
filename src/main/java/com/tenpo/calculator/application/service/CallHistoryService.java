@@ -18,28 +18,28 @@ import reactor.core.scheduler.Schedulers;
 @Slf4j
 public class CallHistoryService implements CallHistoryUseCase {
 
-    private final CallHistoryRepositoryPort puertoRepositorioHistorial;
+    private final CallHistoryRepositoryPort repositorioHistorial;
 
     @Override
     @Async
     public void saveCallHistoryAsync(CallHistory historialLlamada) {
-        log.debug("Guardando historial de llamadas de forma asíncrona: {}", historialLlamada);
-        puertoRepositorioHistorial.save(historialLlamada)
+        log.debug("Guardando historial de llamadas en segundo plano: {}", historialLlamada);
+        repositorioHistorial.save(historialLlamada)
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe(
-                guardado -> log.debug("Historial de llamadas guardado exitosamente con id: {}", guardado.id()),
-                error -> log.error("Error al guardar historial de llamadas: {}", error.getMessage())
+                guardado -> log.debug("Historial guardado con id: {}", guardado.id()),
+                error -> log.error("Error al guardar historial: {}", error.getMessage())
             );
     }
 
     @Override
     public Mono<Page<CallHistory>> getCallHistory(int pagina, int tamanio) {
-        log.debug("Consultando historial de llamadas pagina={}, tamaño={}", pagina, tamanio);
-        int desplazamiento = pagina * tamanio;
+        log.debug("Consultando historial: pagina={}, tamaño={}", pagina, tamanio);
+        int offset = pagina * tamanio;
 
         return Mono.zip(
-            puertoRepositorioHistorial.findAllPaginated(desplazamiento, tamanio).collectList(),
-            puertoRepositorioHistorial.count()
+            repositorioHistorial.findAllPaginated(offset, tamanio).collectList(),
+            repositorioHistorial.count()
         ).map(tupla -> {
             var contenido = tupla.getT1();
             var totalElementos = tupla.getT2();

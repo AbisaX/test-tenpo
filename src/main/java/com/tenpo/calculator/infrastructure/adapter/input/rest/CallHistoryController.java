@@ -24,10 +24,10 @@ import reactor.core.publisher.Mono;
 @RequestMapping("/api/v1/history")
 @RequiredArgsConstructor
 @Slf4j
-@Tag(name = "Historial de Llamadas", description = "Consulta del historial de llamadas a la API")
+@Tag(name = "Historial de llamadas", description = "Consulta del historial de llamadas a la API")
 public class CallHistoryController {
 
-    private final CallHistoryUseCase casoUsoHistorial;
+    private final CallHistoryUseCase servicioHistorial;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -38,7 +38,7 @@ public class CallHistoryController {
     @ApiResponses(value = {
         @ApiResponse(
             responseCode = "200",
-            description = "Historial recuperado exitosamente"
+            description = "Historial recuperado correctamente"
         ),
         @ApiResponse(
             responseCode = "400",
@@ -60,8 +60,8 @@ public class CallHistoryController {
 
         log.info("Consultando historial de llamadas: pagina={}, tamaño={}", pagina, tamanio);
 
-        return casoUsoHistorial.getCallHistory(pagina, tamanio)
-            .map(resultadoPagina -> PageResponse.fromPage(resultadoPagina, CallHistoryResponse::fromDomain))
+        return servicioHistorial.getCallHistory(pagina, tamanio)
+            .map(paginaHistorial -> PageResponse.fromPage(paginaHistorial, CallHistoryResponse::fromDomain))
             .doOnSuccess(respuesta -> log.info("Se recuperaron {} registros del historial", respuesta.content().size()));
     }
 }

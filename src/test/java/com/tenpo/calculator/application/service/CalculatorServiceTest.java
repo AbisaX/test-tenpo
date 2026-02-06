@@ -18,33 +18,30 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CalculatorService - Tests Unitarios")
+@DisplayName("CalculatorService - Tests unitarios")
 class CalculatorServiceTest {
 
     @Mock
-    private PercentageServicePort percentageServicePort;
+    private PercentageServicePort servicioPorcentaje;
 
     private CalculatorService calculatorService;
 
     @BeforeEach
     void configurar() {
-        calculatorService = new CalculatorService(percentageServicePort);
+        calculatorService = new CalculatorService(servicioPorcentaje);
     }
 
     @Test
     @DisplayName("Debe calcular la suma con porcentaje del servicio externo")
     void debeCalcularSumaConPorcentaje() {
-        // Arrange (Preparación)
         BigDecimal num1 = new BigDecimal("5");
         BigDecimal num2 = new BigDecimal("5");
         BigDecimal porcentaje = new BigDecimal("10");
 
-        when(percentageServicePort.getPercentage()).thenReturn(Mono.just(porcentaje));
+        when(servicioPorcentaje.getPercentage()).thenReturn(Mono.just(porcentaje));
 
-        // Act (Acción)
         Mono<CalculationResult> resultadoMono = calculatorService.calculateWithPercentage(num1, num2);
 
-        // Assert (Verificación)
         StepVerifier.create(resultadoMono)
             .assertNext(resultado -> {
                 assertThat(resultado.num1()).isEqualByComparingTo(num1);
@@ -55,23 +52,20 @@ class CalculatorServiceTest {
             })
             .verifyComplete();
 
-        verify(percentageServicePort, times(1)).getPercentage();
+        verify(servicioPorcentaje, times(1)).getPercentage();
     }
 
     @Test
     @DisplayName("Debe manejar porcentaje cero correctamente")
     void debeManejarPorcentajeCero() {
-        // Arrange (Preparación)
         BigDecimal num1 = new BigDecimal("100");
         BigDecimal num2 = new BigDecimal("200");
         BigDecimal porcentaje = BigDecimal.ZERO;
 
-        when(percentageServicePort.getPercentage()).thenReturn(Mono.just(porcentaje));
+        when(servicioPorcentaje.getPercentage()).thenReturn(Mono.just(porcentaje));
 
-        // Act (Acción)
         Mono<CalculationResult> resultadoMono = calculatorService.calculateWithPercentage(num1, num2);
 
-        // Assert (Verificación)
         StepVerifier.create(resultadoMono)
             .assertNext(resultado -> {
                 assertThat(resultado.sum()).isEqualByComparingTo(new BigDecimal("300"));
@@ -82,39 +76,33 @@ class CalculatorServiceTest {
 
     @Test
     @DisplayName("Debe propagar error cuando el servicio externo falla")
-    void debePropararErrorCuandoServicioFalla() {
-        // Arrange (Preparación)
+    void debePropagarErrorCuandoServicioFalla() {
         BigDecimal num1 = new BigDecimal("5");
         BigDecimal num2 = new BigDecimal("5");
 
-        when(percentageServicePort.getPercentage())
+        when(servicioPorcentaje.getPercentage())
             .thenReturn(Mono.error(new ExternalServiceException("Servicio no disponible")));
 
-        // Act (Acción)
         Mono<CalculationResult> resultadoMono = calculatorService.calculateWithPercentage(num1, num2);
 
-        // Assert (Verificación)
         StepVerifier.create(resultadoMono)
             .expectError(ExternalServiceException.class)
             .verify();
 
-        verify(percentageServicePort, times(1)).getPercentage();
+        verify(servicioPorcentaje, times(1)).getPercentage();
     }
 
     @Test
     @DisplayName("Debe manejar números decimales correctamente")
     void debeManejarNumerosDecimales() {
-        // Arrange (Preparación)
         BigDecimal num1 = new BigDecimal("10.5");
         BigDecimal num2 = new BigDecimal("5.5");
         BigDecimal porcentaje = new BigDecimal("25");
 
-        when(percentageServicePort.getPercentage()).thenReturn(Mono.just(porcentaje));
+        when(servicioPorcentaje.getPercentage()).thenReturn(Mono.just(porcentaje));
 
-        // Act (Acción)
         Mono<CalculationResult> resultadoMono = calculatorService.calculateWithPercentage(num1, num2);
 
-        // Assert (Verificación)
         StepVerifier.create(resultadoMono)
             .assertNext(resultado -> {
                 assertThat(resultado.sum()).isEqualByComparingTo(new BigDecimal("16"));
@@ -126,17 +114,14 @@ class CalculatorServiceTest {
     @Test
     @DisplayName("Debe manejar números negativos correctamente")
     void debeManejarNumerosNegativos() {
-        // Arrange (Preparación)
         BigDecimal num1 = new BigDecimal("-10");
         BigDecimal num2 = new BigDecimal("20");
         BigDecimal porcentaje = new BigDecimal("50");
 
-        when(percentageServicePort.getPercentage()).thenReturn(Mono.just(porcentaje));
+        when(servicioPorcentaje.getPercentage()).thenReturn(Mono.just(porcentaje));
 
-        // Act (Acción)
         Mono<CalculationResult> resultadoMono = calculatorService.calculateWithPercentage(num1, num2);
 
-        // Assert (Verificación)
         StepVerifier.create(resultadoMono)
             .assertNext(resultado -> {
                 assertThat(resultado.sum()).isEqualByComparingTo(new BigDecimal("10"));

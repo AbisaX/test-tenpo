@@ -12,7 +12,7 @@ public record ErrorResponse(
     @Schema(description = "Código de estado HTTP", example = "429")
     int status,
 
-    @Schema(description = "Tipo de error", example = "Demasiadas Peticiones")
+    @Schema(description = "Tipo de error", example = "Demasiadas peticiones")
     String error,
 
     @Schema(description = "Mensaje detallado del error", example = "Límite de peticiones excedido. Máximo 3 por minuto.")

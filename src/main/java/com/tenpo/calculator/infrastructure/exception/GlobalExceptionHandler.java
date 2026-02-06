@@ -24,18 +24,18 @@ public class GlobalExceptionHandler {
             RateLimitExceededException ex,
             ServerWebExchange exchange) {
 
-        log.warn("Límite de peticiones excedido: {}", ex.getMessage());
+        log.warn("Rate limit excedido: {}", ex.getMessage());
 
-        ErrorResponse respuestaError = ErrorResponse.of(
+        ErrorResponse respuesta = ErrorResponse.of(
             HttpStatus.TOO_MANY_REQUESTS.value(),
-            "Demasiadas Peticiones",
-            "Límite de peticiones excedido. Máximo 3 peticiones por minuto permitidas. Por favor, intente nuevamente más tarde.",
+            "Demasiadas peticiones",
+            "Límite de peticiones excedido. Máximo 3 por minuto. Intenta más tarde.",
             exchange.getRequest().getPath().value()
         );
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.TOO_MANY_REQUESTS)
-            .body(respuestaError));
+            .body(respuesta));
     }
 
     @ExceptionHandler(ExternalServiceException.class)
@@ -45,16 +45,16 @@ public class GlobalExceptionHandler {
 
         log.error("Error del servicio externo: {}", ex.getMessage());
 
-        ErrorResponse respuestaError = ErrorResponse.of(
+        ErrorResponse respuesta = ErrorResponse.of(
             HttpStatus.SERVICE_UNAVAILABLE.value(),
-            "Servicio No Disponible",
-            "El servicio externo de porcentaje no está disponible después de 3 intentos. Por favor, intente nuevamente más tarde.",
+            "Servicio no disponible",
+            "El servicio de porcentaje no respondió después de 3 intentos.",
             exchange.getRequest().getPath().value()
         );
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.SERVICE_UNAVAILABLE)
-            .body(respuestaError));
+            .body(respuesta));
     }
 
     @ExceptionHandler(WebExchangeBindException.class)
@@ -64,20 +64,20 @@ public class GlobalExceptionHandler {
 
         log.warn("Error de validación: {}", ex.getMessage());
 
-        String mensajeError = ex.getFieldErrors().stream()
+        String detalle = ex.getFieldErrors().stream()
             .map(error -> error.getField() + ": " + error.getDefaultMessage())
             .collect(Collectors.joining(", "));
 
-        ErrorResponse respuestaError = ErrorResponse.of(
+        ErrorResponse respuesta = ErrorResponse.of(
             HttpStatus.BAD_REQUEST.value(),
-            "Error de Validación",
-            mensajeError,
+            "Error de validación",
+            detalle,
             exchange.getRequest().getPath().value()
         );
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(respuestaError));
+            .body(respuesta));
     }
 
     @ExceptionHandler(ServerWebInputException.class)
@@ -87,16 +87,16 @@ public class GlobalExceptionHandler {
 
         log.warn("Error de entrada: {}", ex.getMessage());
 
-        ErrorResponse respuestaError = ErrorResponse.of(
+        ErrorResponse respuesta = ErrorResponse.of(
             HttpStatus.BAD_REQUEST.value(),
-            "Solicitud Incorrecta",
-            "El cuerpo de la solicitud es inválido o tiene un formato incorrecto. Verifique los datos enviados.",
+            "Solicitud inválida",
+            "El cuerpo de la solicitud no es válido o tiene un formato incorrecto.",
             exchange.getRequest().getPath().value()
         );
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(respuestaError));
+            .body(respuesta));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -106,16 +106,16 @@ public class GlobalExceptionHandler {
 
         log.warn("Argumento inválido: {}", ex.getMessage());
 
-        ErrorResponse respuestaError = ErrorResponse.of(
+        ErrorResponse respuesta = ErrorResponse.of(
             HttpStatus.BAD_REQUEST.value(),
-            "Solicitud Incorrecta",
-            "Los parámetros proporcionados son inválidos: " + ex.getMessage(),
+            "Solicitud inválida",
+            "Parámetros inválidos: " + ex.getMessage(),
             exchange.getRequest().getPath().value()
         );
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.BAD_REQUEST)
-            .body(respuestaError));
+            .body(respuesta));
     }
 
     @ExceptionHandler(Exception.class)
@@ -125,15 +125,15 @@ public class GlobalExceptionHandler {
 
         log.error("Error inesperado: {}", ex.getMessage(), ex);
 
-        ErrorResponse respuestaError = ErrorResponse.of(
+        ErrorResponse respuesta = ErrorResponse.of(
             HttpStatus.INTERNAL_SERVER_ERROR.value(),
-            "Error Interno del Servidor",
-            "Ocurrió un error inesperado. Por favor, intente nuevamente más tarde.",
+            "Error interno del servidor",
+            "Ocurrió un error inesperado. Intenta nuevamente más tarde.",
             exchange.getRequest().getPath().value()
         );
 
         return Mono.just(ResponseEntity
             .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(respuestaError));
+            .body(respuesta));
     }
 }

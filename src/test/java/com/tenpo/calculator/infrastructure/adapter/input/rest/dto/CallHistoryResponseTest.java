@@ -8,13 +8,12 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("CallHistoryResponse - Tests Unitarios")
+@DisplayName("CallHistoryResponse - Tests unitarios")
 class CallHistoryResponseTest {
 
     @Test
     @DisplayName("Debe crear CallHistoryResponse desde modelo de dominio")
     void debeCrearDesdeModeloDeDominio() {
-        // Arrange (Preparación)
         LocalDateTime timestamp = LocalDateTime.now();
         CallHistory dominio = new CallHistory(
             1L,
@@ -27,10 +26,8 @@ class CallHistoryResponseTest {
             true
         );
 
-        // Act (Acción)
         CallHistoryResponse respuesta = CallHistoryResponse.fromDomain(dominio);
 
-        // Assert (Verificación)
         assertThat(respuesta.id()).isEqualTo(1L);
         assertThat(respuesta.timestamp()).isEqualTo(timestamp);
         assertThat(respuesta.endpoint()).isEqualTo("/api/v1/calculator/calculate");
@@ -44,22 +41,19 @@ class CallHistoryResponseTest {
     @Test
     @DisplayName("Debe manejar respuesta de petición fallida")
     void debeManejarPeticionFallida() {
-        // Arrange (Preparación)
         CallHistory dominio = new CallHistory(
             2L,
             LocalDateTime.now(),
             "/api/v1/calculator/calculate",
             "POST",
             "{}",
-            "{\"error\": \"Solicitud Incorrecta\"}",
+            "{\"error\": \"Solicitud inválida\"}",
             400,
             false
         );
 
-        // Act (Acción)
         CallHistoryResponse respuesta = CallHistoryResponse.fromDomain(dominio);
 
-        // Assert (Verificación)
         assertThat(respuesta.statusCode()).isEqualTo(400);
         assertThat(respuesta.success()).isFalse();
     }

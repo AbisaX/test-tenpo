@@ -21,7 +21,7 @@ import java.time.Duration;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("RateLimitFilter - Tests Unitarios")
+@DisplayName("RateLimitFilter - Tests unitarios")
 class RateLimitFilterTest {
 
     @Mock
@@ -31,7 +31,6 @@ class RateLimitFilterTest {
 
     @BeforeEach
     void configurar() {
-        // Crear un bucket con 3 peticiones por minuto
         Bucket bucket = Bucket.builder()
             .addLimit(Bandwidth.builder()
                 .capacity(3)
@@ -44,7 +43,6 @@ class RateLimitFilterTest {
     @Test
     @DisplayName("Debe permitir la petición cuando no se excede el límite")
     void debePermitirPeticionCuandoNoExcedeLimite() {
-        // Arrange (Preparación)
         MockServerHttpRequest request = MockServerHttpRequest
             .method(HttpMethod.POST, "/api/v1/calculator/calculate")
             .build();
@@ -52,7 +50,6 @@ class RateLimitFilterTest {
 
         when(filterChain.filter(exchange)).thenReturn(Mono.empty());
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(rateLimitFilter.filter(exchange, filterChain))
             .verifyComplete();
 
@@ -62,7 +59,6 @@ class RateLimitFilterTest {
     @Test
     @DisplayName("Debe bloquear la petición cuando se excede el límite")
     void debeBloquearPeticionCuandoExcedeLimite() {
-        // Arrange (Preparación) - consumir todos los tokens
         Bucket bucket = Bucket.builder()
             .addLimit(Bandwidth.builder()
                 .capacity(1)
@@ -78,11 +74,9 @@ class RateLimitFilterTest {
 
         when(filterChain.filter(any())).thenReturn(Mono.empty());
 
-        // Act (Acción) - Primera petición debe pasar
         StepVerifier.create(rateLimitFilter.filter(exchange1, filterChain))
             .verifyComplete();
 
-        // Assert (Verificación) - Segunda petición debe ser bloqueada
         MockServerHttpRequest peticion2 = MockServerHttpRequest
             .method(HttpMethod.POST, "/api/v1/calculator/calculate")
             .build();
@@ -96,7 +90,6 @@ class RateLimitFilterTest {
     @Test
     @DisplayName("No debe aplicar límite de peticiones a rutas fuera de la API")
     void noDebeAplicarLimiteARutasFueraDeApi() {
-        // Arrange (Preparación)
         MockServerHttpRequest request = MockServerHttpRequest
             .method(HttpMethod.GET, "/swagger-ui.html")
             .build();
@@ -104,7 +97,6 @@ class RateLimitFilterTest {
 
         when(filterChain.filter(exchange)).thenReturn(Mono.empty());
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(rateLimitFilter.filter(exchange, filterChain))
             .verifyComplete();
 
@@ -114,7 +106,6 @@ class RateLimitFilterTest {
     @Test
     @DisplayName("No debe aplicar límite de peticiones a endpoints de actuator")
     void noDebeAplicarLimiteAEndpointsDeActuator() {
-        // Arrange (Preparación)
         MockServerHttpRequest request = MockServerHttpRequest
             .method(HttpMethod.GET, "/actuator/health")
             .build();
@@ -122,7 +113,6 @@ class RateLimitFilterTest {
 
         when(filterChain.filter(exchange)).thenReturn(Mono.empty());
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(rateLimitFilter.filter(exchange, filterChain))
             .verifyComplete();
 
@@ -132,7 +122,6 @@ class RateLimitFilterTest {
     @Test
     @DisplayName("Debe permitir exactamente 3 peticiones por minuto")
     void debePermitirExactamenteTresPeticionesPorMinuto() {
-        // Arrange (Preparación)
         Bucket bucket = Bucket.builder()
             .addLimit(Bandwidth.builder()
                 .capacity(3)
@@ -143,7 +132,6 @@ class RateLimitFilterTest {
 
         when(filterChain.filter(any())).thenReturn(Mono.empty());
 
-        // Act (Acción) - Las primeras 3 peticiones deben pasar
         for (int i = 0; i < 3; i++) {
             MockServerHttpRequest request = MockServerHttpRequest
                 .method(HttpMethod.POST, "/api/v1/calculator/calculate")
@@ -154,7 +142,6 @@ class RateLimitFilterTest {
                 .verifyComplete();
         }
 
-        // Assert (Verificación) - La 4ta petición debe fallar
         MockServerHttpRequest peticion4 = MockServerHttpRequest
             .method(HttpMethod.POST, "/api/v1/calculator/calculate")
             .build();

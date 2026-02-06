@@ -12,7 +12,7 @@ import reactor.test.StepVerifier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("GlobalExceptionHandler - Tests Unitarios")
+@DisplayName("GlobalExceptionHandler - Tests unitarios")
 class GlobalExceptionHandlerTest {
 
     private GlobalExceptionHandler exceptionHandler;
@@ -25,20 +25,20 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Debe manejar RateLimitExceededException con estado 429")
     void debeManejarRateLimitExceededException() {
-        // Arrange (Preparación)
         RateLimitExceededException excepcion = new RateLimitExceededException("Límite de peticiones excedido");
         MockServerWebExchange exchange = MockServerWebExchange.from(
             MockServerHttpRequest.post("/api/v1/calculator/calculate").build()
         );
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(exceptionHandler.handleRateLimitExceeded(excepcion, exchange))
             .assertNext(respuesta -> {
                 assertThat(respuesta.getStatusCode()).isEqualTo(HttpStatus.TOO_MANY_REQUESTS);
                 assertThat(respuesta.getBody()).isNotNull();
                 assertThat(respuesta.getBody().status()).isEqualTo(429);
-                assertThat(respuesta.getBody().error()).isEqualTo("Demasiadas Peticiones");
-                assertThat(respuesta.getBody().message()).isEqualTo("Límite de peticiones excedido. Máximo 3 peticiones por minuto permitidas. Por favor, intente nuevamente más tarde.");
+                assertThat(respuesta.getBody().error()).isEqualTo("Demasiadas peticiones");
+                assertThat(respuesta.getBody().message()).isEqualTo(
+                    "Límite de peticiones excedido. Máximo 3 por minuto. Intenta más tarde."
+                );
             })
             .verifyComplete();
     }
@@ -46,19 +46,17 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Debe manejar ExternalServiceException con estado 503")
     void debeManejarExternalServiceException() {
-        // Arrange (Preparación)
         ExternalServiceException excepcion = new ExternalServiceException("Servicio no disponible");
         MockServerWebExchange exchange = MockServerWebExchange.from(
             MockServerHttpRequest.post("/api/v1/calculator/calculate").build()
         );
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(exceptionHandler.handleExternalServiceException(excepcion, exchange))
             .assertNext(respuesta -> {
                 assertThat(respuesta.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
                 assertThat(respuesta.getBody()).isNotNull();
                 assertThat(respuesta.getBody().status()).isEqualTo(503);
-                assertThat(respuesta.getBody().error()).isEqualTo("Servicio No Disponible");
+                assertThat(respuesta.getBody().error()).isEqualTo("Servicio no disponible");
             })
             .verifyComplete();
     }
@@ -66,20 +64,19 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Debe manejar IllegalArgumentException con estado 400")
     void debeManejarIllegalArgumentException() {
-        // Arrange (Preparación)
         IllegalArgumentException excepcion = new IllegalArgumentException("Parámetro inválido");
         MockServerWebExchange exchange = MockServerWebExchange.from(
             MockServerHttpRequest.post("/api/v1/calculator/calculate").build()
         );
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(exceptionHandler.handleIllegalArgument(excepcion, exchange))
             .assertNext(respuesta -> {
                 assertThat(respuesta.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
                 assertThat(respuesta.getBody()).isNotNull();
                 assertThat(respuesta.getBody().status()).isEqualTo(400);
-                assertThat(respuesta.getBody().error()).isEqualTo("Solicitud Incorrecta");
-                assertThat(respuesta.getBody().message()).isEqualTo("Los parámetros proporcionados son inválidos: Parámetro inválido");
+                assertThat(respuesta.getBody().error()).isEqualTo("Solicitud inválida");
+                assertThat(respuesta.getBody().message())
+                    .isEqualTo("Parámetros inválidos: Parámetro inválido");
             })
             .verifyComplete();
     }
@@ -87,19 +84,17 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Debe manejar Exception genérica con estado 500")
     void debeManejarExceptionGenerica() {
-        // Arrange (Preparación)
         Exception excepcion = new Exception("Error inesperado");
         MockServerWebExchange exchange = MockServerWebExchange.from(
             MockServerHttpRequest.post("/api/v1/calculator/calculate").build()
         );
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(exceptionHandler.handleGenericException(excepcion, exchange))
             .assertNext(respuesta -> {
                 assertThat(respuesta.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
                 assertThat(respuesta.getBody()).isNotNull();
                 assertThat(respuesta.getBody().status()).isEqualTo(500);
-                assertThat(respuesta.getBody().error()).isEqualTo("Error Interno del Servidor");
+                assertThat(respuesta.getBody().error()).isEqualTo("Error interno del servidor");
             })
             .verifyComplete();
     }
@@ -107,14 +102,12 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("Debe incluir la ruta en la respuesta de error")
     void debeIncluirRutaEnRespuestaDeError() {
-        // Arrange (Preparación)
         RateLimitExceededException excepcion = new RateLimitExceededException("Límite de peticiones excedido");
         String ruta = "/api/v1/calculator/calculate";
         MockServerWebExchange exchange = MockServerWebExchange.from(
             MockServerHttpRequest.post(ruta).build()
         );
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(exceptionHandler.handleRateLimitExceeded(excepcion, exchange))
             .assertNext(respuesta -> {
                 assertThat(respuesta.getBody()).isNotNull();

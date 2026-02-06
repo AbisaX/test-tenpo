@@ -17,27 +17,27 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class RateLimitFilter implements WebFilter {
 
-    private final Bucket contenedorTokens;
+    private final Bucket bucketPeticiones;
 
-    private static final String PREFIJO_RUTA_API = "/api/";
+    private static final String RUTA_API_BASE = "/api/";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String ruta = exchange.getRequest().getPath().value();
 
-        // Solo aplicar rate limiting a endpoints de la API
-        if (!ruta.startsWith(PREFIJO_RUTA_API)) {
+        // El rate limit solo aplica a los endpoints de la API pública.
+        if (!ruta.startsWith(RUTA_API_BASE)) {
             return chain.filter(exchange);
         }
 
-        if (contenedorTokens.tryConsume(1)) {
-            log.debug("Verificación de límite de peticiones exitosa para: {}", ruta);
+        if (bucketPeticiones.tryConsume(1)) {
+            log.debug("Rate limit OK para {}", ruta);
             return chain.filter(exchange);
         }
 
-        log.warn("Límite de peticiones excedido para: {}", ruta);
+        log.warn("Rate limit excedido para {}", ruta);
         return Mono.error(new RateLimitExceededException(
-            "Límite de peticiones excedido. Máximo 3 peticiones por minuto permitidas. Por favor, intente nuevamente más tarde."
+            "Límite de peticiones excedido. Máximo 3 por minuto. Intenta nuevamente más tarde."
         ));
     }
 }

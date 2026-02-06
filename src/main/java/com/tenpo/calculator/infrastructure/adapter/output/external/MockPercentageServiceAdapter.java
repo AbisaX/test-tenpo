@@ -22,6 +22,6 @@ public class MockPercentageServiceAdapter implements PercentageServicePort {
     public Mono<BigDecimal> getPercentage() {
         log.debug("Retornando porcentaje mock: {}%", PORCENTAJE_MOCK);
         return Mono.just(PORCENTAJE_MOCK)
-            .delayElement(Duration.ofMillis(100)); // Simulando latencia de red
+            .delayElement(Duration.ofMillis(100)); // Simula latencia de red
     }
 }

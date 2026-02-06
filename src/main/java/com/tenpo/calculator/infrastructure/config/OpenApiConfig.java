@@ -24,17 +24,17 @@ public class OpenApiConfig {
                     ## Características
                     - **Cálculo con porcentaje**: Suma dos números y aplica un porcentaje obtenido de un servicio externo
                     - **Historial de llamadas**: Consulta paginada de todas las llamadas realizadas a la API
-                    - **Rate Limiting**: Límite de 3 peticiones por minuto
-                    - **Reintentos automáticos**: Lógica de reintento ante fallos del servicio externo (máximo 3 intentos)
+                    - **Límite de peticiones**: Máximo 3 solicitudes por minuto
+                    - **Reintentos automáticos**: Reintentos ante fallos del servicio externo (máximo 3 intentos)
 
-                    ## Códigos de Error
+                    ## Códigos de error
                     | Código | Descripción |
                     |--------|-------------|
                     | 400 | Parámetros de entrada inválidos |
                     | 429 | Límite de peticiones excedido |
                     | 503 | Servicio externo no disponible |
 
-                    ## Ejemplo de Uso
+                    ## Ejemplo de uso
                     ```json
                     POST /api/v1/calculator/calculate
                     {

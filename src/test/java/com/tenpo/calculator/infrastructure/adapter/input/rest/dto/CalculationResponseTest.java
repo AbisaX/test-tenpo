@@ -8,23 +8,20 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("CalculationResponse - Tests Unitarios")
+@DisplayName("CalculationResponse - Tests unitarios")
 class CalculationResponseTest {
 
     @Test
     @DisplayName("Debe crear CalculationResponse desde modelo de dominio")
     void debeCrearDesdeModeloDeDominio() {
-        // Arrange (Preparación)
         CalculationResult dominio = CalculationResult.of(
             new BigDecimal("5"),
             new BigDecimal("5"),
             new BigDecimal("10")
         );
 
-        // Act (Acción)
         CalculationResponse respuesta = CalculationResponse.fromDomain(dominio);
 
-        // Assert (Verificación)
         assertThat(respuesta.num1()).isEqualByComparingTo(new BigDecimal("5"));
         assertThat(respuesta.num2()).isEqualByComparingTo(new BigDecimal("5"));
         assertThat(respuesta.sum()).isEqualByComparingTo(new BigDecimal("10"));
@@ -35,17 +32,14 @@ class CalculationResponseTest {
     @Test
     @DisplayName("Debe mapear todos los campos correctamente")
     void debeMapearTodosLosCampos() {
-        // Arrange (Preparación)
         CalculationResult dominio = CalculationResult.of(
             new BigDecimal("100"),
             new BigDecimal("200"),
             new BigDecimal("25")
         );
 
-        // Act (Acción)
         CalculationResponse respuesta = CalculationResponse.fromDomain(dominio);
 
-        // Assert (Verificación)
         assertThat(respuesta.sum()).isEqualByComparingTo(new BigDecimal("300"));
         assertThat(respuesta.result()).isEqualByComparingTo(new BigDecimal("375"));
     }

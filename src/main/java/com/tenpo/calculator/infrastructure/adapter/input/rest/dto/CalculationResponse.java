@@ -22,13 +22,13 @@ public record CalculationResponse(
     @Schema(description = "Resultado final después de aplicar el porcentaje", example = "11")
     BigDecimal result
 ) {
-    public static CalculationResponse fromDomain(CalculationResult resultadoCalculo) {
+    public static CalculationResponse fromDomain(CalculationResult resultado) {
         return new CalculationResponse(
-            resultadoCalculo.num1(),
-            resultadoCalculo.num2(),
-            resultadoCalculo.sum(),
-            resultadoCalculo.percentage(),
-            resultadoCalculo.result()
+            resultado.num1(),
+            resultado.num2(),
+            resultado.sum(),
+            resultado.percentage(),
+            resultado.result()
         );
     }
 }

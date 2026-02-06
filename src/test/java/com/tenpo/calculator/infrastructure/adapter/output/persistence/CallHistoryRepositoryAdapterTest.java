@@ -20,7 +20,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@DisplayName("CallHistoryRepositoryAdapter - Tests Unitarios")
+@DisplayName("CallHistoryRepositoryAdapter - Tests unitarios")
 class CallHistoryRepositoryAdapterTest {
 
     @Mock
@@ -36,7 +36,6 @@ class CallHistoryRepositoryAdapterTest {
     @Test
     @DisplayName("Debe guardar historial de llamadas y retornar modelo de dominio")
     void debeGuardarHistorialYRetornarModeloDominio() {
-        // Arrange (Preparación)
         CallHistory historial = CallHistory.create(
             "/api/v1/calculator/calculate",
             "POST",
@@ -60,7 +59,6 @@ class CallHistoryRepositoryAdapterTest {
         when(r2dbcRepository.save(any(CallHistoryEntity.class)))
             .thenReturn(Mono.just(entidadGuardada));
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(adapter.save(historial))
             .assertNext(guardado -> {
                 assertThat(guardado.id()).isEqualTo(1L);
@@ -76,7 +74,6 @@ class CallHistoryRepositoryAdapterTest {
     @Test
     @DisplayName("Debe encontrar historial de llamadas paginado")
     void debeEncontrarHistorialPaginado() {
-        // Arrange (Preparación)
         CallHistoryEntity entidad1 = CallHistoryEntity.builder()
             .id(1L)
             .timestamp(LocalDateTime.now())
@@ -102,7 +99,6 @@ class CallHistoryRepositoryAdapterTest {
         when(r2dbcRepository.findAllPaginated(0, 10))
             .thenReturn(Flux.just(entidad1, entidad2));
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(adapter.findAllPaginated(0, 10))
             .assertNext(historial -> {
                 assertThat(historial.id()).isEqualTo(1L);
@@ -120,10 +116,8 @@ class CallHistoryRepositoryAdapterTest {
     @Test
     @DisplayName("Debe retornar el conteo de todos los registros")
     void debeRetornarConteoDeRegistros() {
-        // Arrange (Preparación)
         when(r2dbcRepository.count()).thenReturn(Mono.just(100L));
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(adapter.count())
             .assertNext(conteo -> assertThat(conteo).isEqualTo(100L))
             .verifyComplete();
@@ -134,11 +128,9 @@ class CallHistoryRepositoryAdapterTest {
     @Test
     @DisplayName("Debe manejar conjunto de resultados vacío")
     void debeManejarResultadosVacios() {
-        // Arrange (Preparación)
         when(r2dbcRepository.findAllPaginated(0, 10))
             .thenReturn(Flux.empty());
 
-        // Act & Assert (Acción y Verificación)
         StepVerifier.create(adapter.findAllPaginated(0, 10))
             .verifyComplete();
     }

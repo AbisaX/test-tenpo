@@ -29,9 +29,9 @@ public record PageResponse<T>(
     @Schema(description = "Indica si es la última página", example = "false")
     boolean last
 ) {
-    public static <T, R> PageResponse<R> fromPage(Page<T> pagina, Function<T, R> mapeador) {
+    public static <T, R> PageResponse<R> fromPage(Page<T> pagina, Function<T, R> transformador) {
         return new PageResponse<>(
-            pagina.getContent().stream().map(mapeador).toList(),
+            pagina.getContent().stream().map(transformador).toList(),
             pagina.getNumber(),
             pagina.getSize(),
             pagina.getTotalElements(),
