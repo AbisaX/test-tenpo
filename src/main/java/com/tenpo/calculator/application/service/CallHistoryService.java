@@ -18,32 +18,32 @@ import reactor.core.scheduler.Schedulers;
 @Slf4j
 public class CallHistoryService implements CallHistoryUseCase {
 
-    private final CallHistoryRepositoryPort callHistoryRepositoryPort;
+    private final CallHistoryRepositoryPort puertoRepositorioHistorial;
 
     @Override
     @Async
-    public void saveCallHistoryAsync(CallHistory callHistory) {
-        log.debug("Guardando historial de llamadas de forma asíncrona: {}", callHistory);
-        callHistoryRepositoryPort.save(callHistory)
+    public void saveCallHistoryAsync(CallHistory historialLlamada) {
+        log.debug("Guardando historial de llamadas de forma asíncrona: {}", historialLlamada);
+        puertoRepositorioHistorial.save(historialLlamada)
             .subscribeOn(Schedulers.boundedElastic())
             .subscribe(
-                saved -> log.debug("Historial de llamadas guardado exitosamente con id: {}", saved.id()),
+                guardado -> log.debug("Historial de llamadas guardado exitosamente con id: {}", guardado.id()),
                 error -> log.error("Error al guardar historial de llamadas: {}", error.getMessage())
             );
     }
 
     @Override
-    public Mono<Page<CallHistory>> getCallHistory(int page, int size) {
-        log.debug("Consultando historial de llamadas pagina={}, tamaño={}", page, size);
-        int offset = page * size;
+    public Mono<Page<CallHistory>> getCallHistory(int pagina, int tamanio) {
+        log.debug("Consultando historial de llamadas pagina={}, tamaño={}", pagina, tamanio);
+        int desplazamiento = pagina * tamanio;
 
         return Mono.zip(
-            callHistoryRepositoryPort.findAllPaginated(offset, size).collectList(),
-            callHistoryRepositoryPort.count()
-        ).map(tuple -> {
-            var content = tuple.getT1();
-            var totalElements = tuple.getT2();
-            return new PageImpl<>(content, PageRequest.of(page, size), totalElements);
+            puertoRepositorioHistorial.findAllPaginated(desplazamiento, tamanio).collectList(),
+            puertoRepositorioHistorial.count()
+        ).map(tupla -> {
+            var contenido = tupla.getT1();
+            var totalElementos = tupla.getT2();
+            return new PageImpl<>(contenido, PageRequest.of(pagina, tamanio), totalElementos);
         });
     }
 }

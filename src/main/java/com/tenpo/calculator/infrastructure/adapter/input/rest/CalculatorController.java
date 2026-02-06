@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 @Tag(name = "Calculadora", description = "Operaciones de cálculo con porcentaje dinámico")
 public class CalculatorController {
 
-    private final CalculatorUseCase calculatorUseCase;
+    private final CalculatorUseCase casoUsoCalculadora;
 
     @PostMapping(value = "/calculate", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -57,11 +57,11 @@ public class CalculatorController {
             content = @Content(schema = @Schema(implementation = ErrorResponse.class))
         )
     })
-    public Mono<CalculationResponse> calculate(@Valid @RequestBody CalculationRequest request) {
-        log.info("Solicitud de cálculo recibida: num1={}, num2={}", request.num1(), request.num2());
+    public Mono<CalculationResponse> calculate(@Valid @RequestBody CalculationRequest solicitud) {
+        log.info("Solicitud de cálculo recibida: num1={}, num2={}", solicitud.num1(), solicitud.num2());
 
-        return calculatorUseCase.calculateWithPercentage(request.num1(), request.num2())
+        return casoUsoCalculadora.calculateWithPercentage(solicitud.num1(), solicitud.num2())
             .map(CalculationResponse::fromDomain)
-            .doOnSuccess(response -> log.info("Cálculo completado exitosamente: {}", response));
+            .doOnSuccess(respuesta -> log.info("Cálculo completado exitosamente: {}", respuesta));
     }
 }

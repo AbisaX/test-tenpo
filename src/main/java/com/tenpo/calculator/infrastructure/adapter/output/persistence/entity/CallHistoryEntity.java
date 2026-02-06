@@ -42,16 +42,16 @@ public class CallHistoryEntity {
     @Column("success")
     private boolean success;
 
-    public static CallHistoryEntity fromDomain(CallHistory callHistory) {
+    public static CallHistoryEntity fromDomain(CallHistory historialLlamada) {
         return CallHistoryEntity.builder()
-            .id(callHistory.id())
-            .timestamp(callHistory.timestamp())
-            .endpoint(callHistory.endpoint())
-            .httpMethod(callHistory.httpMethod())
-            .parameters(callHistory.parameters())
-            .response(callHistory.response())
-            .statusCode(callHistory.statusCode())
-            .success(callHistory.success())
+            .id(historialLlamada.id())
+            .timestamp(historialLlamada.timestamp())
+            .endpoint(historialLlamada.endpoint())
+            .httpMethod(historialLlamada.httpMethod())
+            .parameters(historialLlamada.parameters())
+            .response(historialLlamada.response())
+            .statusCode(historialLlamada.statusCode())
+            .success(historialLlamada.success())
             .build();
     }
 

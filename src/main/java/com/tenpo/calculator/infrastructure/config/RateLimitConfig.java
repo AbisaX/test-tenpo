@@ -12,17 +12,17 @@ import java.time.Duration;
 public class RateLimitConfig {
 
     @Value("${rate-limit.requests-per-minute:3}")
-    private int requestsPerMinute;
+    private int peticionesPorMinuto;
 
     @Bean
     public Bucket rateLimitBucket() {
-        Bandwidth limit = Bandwidth.builder()
-            .capacity(requestsPerMinute)
-            .refillGreedy(requestsPerMinute, Duration.ofMinutes(1))
+        Bandwidth limite = Bandwidth.builder()
+            .capacity(peticionesPorMinuto)
+            .refillGreedy(peticionesPorMinuto, Duration.ofMinutes(1))
             .build();
 
         return Bucket.builder()
-            .addLimit(limit)
+            .addLimit(limite)
             .build();
     }
 }

@@ -27,7 +27,7 @@ import reactor.core.publisher.Mono;
 @Tag(name = "Historial de Llamadas", description = "Consulta del historial de llamadas a la API")
 public class CallHistoryController {
 
-    private final CallHistoryUseCase callHistoryUseCase;
+    private final CallHistoryUseCase casoUsoHistorial;
 
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(
@@ -53,15 +53,15 @@ public class CallHistoryController {
     })
     public Mono<PageResponse<CallHistoryResponse>> getHistory(
             @Parameter(description = "Número de página (comienza en 0)", example = "0")
-            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(name = "page", defaultValue = "0") int pagina,
 
             @Parameter(description = "Cantidad de elementos por página", example = "10")
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(name = "size", defaultValue = "10") int tamanio) {
 
-        log.info("Consultando historial de llamadas: pagina={}, tamaño={}", page, size);
+        log.info("Consultando historial de llamadas: pagina={}, tamaño={}", pagina, tamanio);
 
-        return callHistoryUseCase.getCallHistory(page, size)
-            .map(pageResult -> PageResponse.fromPage(pageResult, CallHistoryResponse::fromDomain))
-            .doOnSuccess(response -> log.info("Se recuperaron {} registros del historial", response.content().size()));
+        return casoUsoHistorial.getCallHistory(pagina, tamanio)
+            .map(resultadoPagina -> PageResponse.fromPage(resultadoPagina, CallHistoryResponse::fromDomain))
+            .doOnSuccess(respuesta -> log.info("Se recuperaron {} registros del historial", respuesta.content().size()));
     }
 }

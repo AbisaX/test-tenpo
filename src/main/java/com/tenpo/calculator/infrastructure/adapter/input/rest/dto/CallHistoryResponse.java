@@ -31,16 +31,16 @@ public record CallHistoryResponse(
     @Schema(description = "Indica si la llamada fue exitosa", example = "true")
     boolean success
 ) {
-    public static CallHistoryResponse fromDomain(CallHistory callHistory) {
+    public static CallHistoryResponse fromDomain(CallHistory historialLlamada) {
         return new CallHistoryResponse(
-            callHistory.id(),
-            callHistory.timestamp(),
-            callHistory.endpoint(),
-            callHistory.httpMethod(),
-            callHistory.parameters(),
-            callHistory.response(),
-            callHistory.statusCode(),
-            callHistory.success()
+            historialLlamada.id(),
+            historialLlamada.timestamp(),
+            historialLlamada.endpoint(),
+            historialLlamada.httpMethod(),
+            historialLlamada.parameters(),
+            historialLlamada.response(),
+            historialLlamada.statusCode(),
+            historialLlamada.success()
         );
     }
 }

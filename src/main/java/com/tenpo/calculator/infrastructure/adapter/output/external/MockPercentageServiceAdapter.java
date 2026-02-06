@@ -16,12 +16,12 @@ import java.time.Duration;
 @Slf4j
 public class MockPercentageServiceAdapter implements PercentageServicePort {
 
-    private static final BigDecimal MOCK_PERCENTAGE = BigDecimal.valueOf(10);
+    private static final BigDecimal PORCENTAJE_MOCK = BigDecimal.valueOf(10);
 
     @Override
     public Mono<BigDecimal> getPercentage() {
-        log.debug("Retornando porcentaje mock: {}%", MOCK_PERCENTAGE);
-        return Mono.just(MOCK_PERCENTAGE)
+        log.debug("Retornando porcentaje mock: {}%", PORCENTAJE_MOCK);
+        return Mono.just(PORCENTAJE_MOCK)
             .delayElement(Duration.ofMillis(100)); // Simulando latencia de red
     }
 }

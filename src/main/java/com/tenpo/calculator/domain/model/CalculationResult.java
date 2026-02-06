@@ -9,10 +9,10 @@ public record CalculationResult(
     BigDecimal percentage,
     BigDecimal result
 ) {
-    public static CalculationResult of(BigDecimal num1, BigDecimal num2, BigDecimal percentage) {
-        BigDecimal sum = num1.add(num2);
-        BigDecimal percentageValue = sum.multiply(percentage).divide(BigDecimal.valueOf(100));
-        BigDecimal result = sum.add(percentageValue);
-        return new CalculationResult(num1, num2, sum, percentage, result);
+    public static CalculationResult of(BigDecimal num1, BigDecimal num2, BigDecimal porcentaje) {
+        BigDecimal suma = num1.add(num2);
+        BigDecimal valorPorcentaje = suma.multiply(porcentaje).divide(BigDecimal.valueOf(100));
+        BigDecimal resultado = suma.add(valorPorcentaje);
+        return new CalculationResult(num1, num2, suma, porcentaje, resultado);
     }
 }

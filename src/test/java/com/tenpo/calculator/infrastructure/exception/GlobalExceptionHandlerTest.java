@@ -38,7 +38,7 @@ class GlobalExceptionHandlerTest {
                 assertThat(respuesta.getBody()).isNotNull();
                 assertThat(respuesta.getBody().status()).isEqualTo(429);
                 assertThat(respuesta.getBody().error()).isEqualTo("Demasiadas Peticiones");
-                assertThat(respuesta.getBody().message()).isEqualTo("Límite de peticiones excedido");
+                assertThat(respuesta.getBody().message()).isEqualTo("Límite de peticiones excedido. Máximo 3 peticiones por minuto permitidas. Por favor, intente nuevamente más tarde.");
             })
             .verifyComplete();
     }
@@ -79,7 +79,7 @@ class GlobalExceptionHandlerTest {
                 assertThat(respuesta.getBody()).isNotNull();
                 assertThat(respuesta.getBody().status()).isEqualTo(400);
                 assertThat(respuesta.getBody().error()).isEqualTo("Solicitud Incorrecta");
-                assertThat(respuesta.getBody().message()).isEqualTo("Parámetro inválido");
+                assertThat(respuesta.getBody().message()).isEqualTo("Los parámetros proporcionados son inválidos: Parámetro inválido");
             })
             .verifyComplete();
     }

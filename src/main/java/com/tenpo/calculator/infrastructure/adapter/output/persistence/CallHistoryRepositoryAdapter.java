@@ -15,24 +15,24 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class CallHistoryRepositoryAdapter implements CallHistoryRepositoryPort {
 
-    private final CallHistoryR2dbcRepository repository;
+    private final CallHistoryR2dbcRepository repositorio;
 
     @Override
-    public Mono<CallHistory> save(CallHistory callHistory) {
+    public Mono<CallHistory> save(CallHistory historialLlamada) {
         log.debug("Guardando historial de llamadas en base de datos");
-        return repository.save(CallHistoryEntity.fromDomain(callHistory))
+        return repositorio.save(CallHistoryEntity.fromDomain(historialLlamada))
             .map(CallHistoryEntity::toDomain);
     }
 
     @Override
-    public Flux<CallHistory> findAllPaginated(int offset, int limit) {
-        log.debug("Buscando historial de llamadas con desplazamiento={}, limite={}", offset, limit);
-        return repository.findAllPaginated(offset, limit)
+    public Flux<CallHistory> findAllPaginated(int desplazamiento, int limite) {
+        log.debug("Buscando historial de llamadas con desplazamiento={}, limite={}", desplazamiento, limite);
+        return repositorio.findAllPaginated(desplazamiento, limite)
             .map(CallHistoryEntity::toDomain);
     }
 
     @Override
     public Mono<Long> count() {
-        return repository.count();
+        return repositorio.count();
     }
 }

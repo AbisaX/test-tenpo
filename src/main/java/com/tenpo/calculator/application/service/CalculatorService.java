@@ -15,17 +15,17 @@ import java.math.BigDecimal;
 @Slf4j
 public class CalculatorService implements CalculatorUseCase {
 
-    private final PercentageServicePort percentageServicePort;
+    private final PercentageServicePort puertoServicioPorcentaje;
 
     @Override
     public Mono<CalculationResult> calculateWithPercentage(BigDecimal num1, BigDecimal num2) {
         log.debug("Calculando con porcentaje para num1={}, num2={}", num1, num2);
 
-        return percentageServicePort.getPercentage()
-            .map(percentage -> {
-                log.debug("Porcentaje recibido: {}%", percentage);
-                return CalculationResult.of(num1, num2, percentage);
+        return puertoServicioPorcentaje.getPercentage()
+            .map(porcentaje -> {
+                log.debug("Porcentaje recibido: {}%", porcentaje);
+                return CalculationResult.of(num1, num2, porcentaje);
             })
-            .doOnSuccess(result -> log.debug("Resultado del cálculo: {}", result));
+            .doOnSuccess(resultado -> log.debug("Resultado del cálculo: {}", resultado));
     }
 }

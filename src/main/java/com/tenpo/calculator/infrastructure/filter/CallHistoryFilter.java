@@ -30,99 +30,99 @@ import java.util.Map;
 @Slf4j
 public class CallHistoryFilter implements WebFilter {
 
-    private final CallHistoryUseCase callHistoryUseCase;
-    private final ObjectMapper objectMapper;
+    private final CallHistoryUseCase casoUsoHistorial;
+    private final ObjectMapper mapeadorJson;
 
-    private static final String API_PATH_PREFIX = "/api/v1/";
-    private static final String HISTORY_PATH = "/api/v1/history";
+    private static final String PREFIJO_RUTA_API = "/api/v1/";
+    private static final String RUTA_HISTORIAL = "/api/v1/history";
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String path = exchange.getRequest().getPath().value();
+        String ruta = exchange.getRequest().getPath().value();
 
         // Solo registrar llamadas a la API (excluyendo el endpoint de historial para evitar recursión)
-        if (!path.startsWith(API_PATH_PREFIX) || path.startsWith(HISTORY_PATH)) {
+        if (!ruta.startsWith(PREFIJO_RUTA_API) || ruta.startsWith(RUTA_HISTORIAL)) {
             return chain.filter(exchange);
         }
 
-        ServerHttpRequest request = exchange.getRequest();
-        ResponseBodyCapture responseCapture = new ResponseBodyCapture();
+        ServerHttpRequest peticion = exchange.getRequest();
+        CapturaRespuesta capturaRespuesta = new CapturaRespuesta();
 
-        ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(exchange.getResponse()) {
+        ServerHttpResponseDecorator respuestaDecorada = new ServerHttpResponseDecorator(exchange.getResponse()) {
             @Override
             public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
                 if (body instanceof Flux<? extends DataBuffer> fluxBody) {
                     return super.writeWith(fluxBody.doOnNext(dataBuffer -> {
-                        byte[] content = new byte[dataBuffer.readableByteCount()];
-                        dataBuffer.read(content);
+                        byte[] contenido = new byte[dataBuffer.readableByteCount()];
+                        dataBuffer.read(contenido);
                         DataBufferUtils.release(dataBuffer);
-                        responseCapture.appendContent(new String(content, StandardCharsets.UTF_8));
+                        capturaRespuesta.agregarContenido(new String(contenido, StandardCharsets.UTF_8));
                     }).map(dataBuffer -> exchange.getResponse().bufferFactory().wrap(
-                        responseCapture.getContent().getBytes(StandardCharsets.UTF_8)
+                        capturaRespuesta.obtenerContenido().getBytes(StandardCharsets.UTF_8)
                     )));
                 }
                 return super.writeWith(body);
             }
         };
 
-        return chain.filter(exchange.mutate().response(decoratedResponse).build())
-            .doFinally(signalType -> {
+        return chain.filter(exchange.mutate().response(respuestaDecorada).build())
+            .doFinally(tipoSenal -> {
                 try {
-                    saveCallHistory(request, exchange.getResponse(), responseCapture.getContent());
+                    guardarHistorial(peticion, exchange.getResponse(), capturaRespuesta.obtenerContenido());
                 } catch (Exception e) {
                     log.error("Error al guardar historial de llamadas: {}", e.getMessage());
                 }
             });
     }
 
-    private void saveCallHistory(ServerHttpRequest request, ServerHttpResponse response, String responseBody) {
-        String endpoint = request.getPath().value();
-        String httpMethod = request.getMethod().name();
-        String parameters = extractParameters(request);
-        Integer statusCode = response.getStatusCode() != null ? response.getStatusCode().value() : null;
-        boolean success = statusCode != null && statusCode >= 200 && statusCode < 400;
+    private void guardarHistorial(ServerHttpRequest peticion, ServerHttpResponse respuesta, String cuerpoRespuesta) {
+        String endpoint = peticion.getPath().value();
+        String metodoHttp = peticion.getMethod().name();
+        String parametros = extraerParametros(peticion);
+        Integer codigoEstado = respuesta.getStatusCode() != null ? respuesta.getStatusCode().value() : null;
+        boolean exitoso = codigoEstado != null && codigoEstado >= 200 && codigoEstado < 400;
 
-        String truncatedResponse = responseBody;
-        if (truncatedResponse != null && truncatedResponse.length() > 2000) {
-            truncatedResponse = truncatedResponse.substring(0, 2000) + "...[truncado]";
+        String respuestaTruncada = cuerpoRespuesta;
+        if (respuestaTruncada != null && respuestaTruncada.length() > 2000) {
+            respuestaTruncada = respuestaTruncada.substring(0, 2000) + "...[truncado]";
         }
 
-        CallHistory callHistory = CallHistory.create(
+        CallHistory historialLlamada = CallHistory.create(
             endpoint,
-            httpMethod,
-            parameters,
-            truncatedResponse,
-            statusCode,
-            success
+            metodoHttp,
+            parametros,
+            respuestaTruncada,
+            codigoEstado,
+            exitoso
         );
 
         // Guardar de forma asíncrona
-        callHistoryUseCase.saveCallHistoryAsync(callHistory);
+        casoUsoHistorial.saveCallHistoryAsync(historialLlamada);
     }
 
-    private String extractParameters(ServerHttpRequest request) {
-        Map<String, String> queryParams = request.getQueryParams().toSingleValueMap();
+    private String extraerParametros(ServerHttpRequest peticion) {
+        Map<String, String> parametrosConsulta = peticion.getQueryParams().toSingleValueMap();
 
         try {
-            if (!queryParams.isEmpty()) {
-                return objectMapper.writeValueAsString(queryParams);
+            if (!parametrosConsulta.isEmpty()) {
+                return mapeadorJson.writeValueAsString(parametrosConsulta);
             }
             return "{}";
         } catch (JsonProcessingException e) {
             log.warn("Error al serializar parámetros: {}", e.getMessage());
-            return queryParams.toString();
+            return parametrosConsulta.toString();
         }
     }
 
-    private static class ResponseBodyCapture {
-        private final StringBuilder content = new StringBuilder();
+    private static class CapturaRespuesta {
+        private final StringBuilder contenido = new StringBuilder();
 
-        void appendContent(String chunk) {
-            content.append(chunk);
+        void agregarContenido(String fragmento) {
+            contenido.append(fragmento);
         }
 
-        String getContent() {
-            return content.toString();
+        String obtenerContenido() {
+            return contenido.toString();
         }
     }
 }

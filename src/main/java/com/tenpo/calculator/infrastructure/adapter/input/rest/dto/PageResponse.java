@@ -29,15 +29,15 @@ public record PageResponse<T>(
     @Schema(description = "Indica si es la última página", example = "false")
     boolean last
 ) {
-    public static <T, R> PageResponse<R> fromPage(Page<T> page, Function<T, R> mapper) {
+    public static <T, R> PageResponse<R> fromPage(Page<T> pagina, Function<T, R> mapeador) {
         return new PageResponse<>(
-            page.getContent().stream().map(mapper).toList(),
-            page.getNumber(),
-            page.getSize(),
-            page.getTotalElements(),
-            page.getTotalPages(),
-            page.isFirst(),
-            page.isLast()
+            pagina.getContent().stream().map(mapeador).toList(),
+            pagina.getNumber(),
+            pagina.getSize(),
+            pagina.getTotalElements(),
+            pagina.getTotalPages(),
+            pagina.isFirst(),
+            pagina.isLast()
         );
     }
 }
